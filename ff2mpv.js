@@ -5,6 +5,7 @@ const DELETE_PROFILE = "deleteProfile";
 const PROFILES = "profiles";
 const OPEN_VIDEO = "openVideo";
 const TITLE = "Play in MPV";
+const OPEN_CLOSE_MENU_ID = "ff2mpv-open-close";
 
 function onError(error) {
   console.log(`${error}`);
@@ -46,6 +47,14 @@ async function getOptions(id) {
 }
 
 async function submenuClicked(info, tab) {
+  if (info.menuItemId === OPEN_CLOSE_MENU_ID) {
+    const url = info.pageUrl || (tab && tab.url);
+    if (url) {
+      ff2mpv(url, tab ? tab.id : null);
+      if (tab) chrome.tabs.remove(tab.id);
+    }
+    return;
+  }
   if (info.parentMenuItemId === "ff2mpv" || info.menuItemId === "ff2mpv") {
     /* These should be mutually exclusive, but,
        if they aren't, this is a reasonable priority.
@@ -77,6 +86,14 @@ function createContextMenuPromise(properties) {
   });
 }
 
+async function createOpenCloseEntry() {
+  await createContextMenuPromise({
+    id: OPEN_CLOSE_MENU_ID,
+    title: "Play in MPV",
+    contexts: ["page"],
+  });
+}
+
 async function changeToMultiEntries() {
   // Remove single entry
   await chrome.contextMenus.removeAll();
@@ -94,6 +111,8 @@ async function changeToMultiEntries() {
     title: TITLE,
     contexts,
   });
+
+  await createOpenCloseEntry();
 }
 
 async function changeToSingleEntry() {
@@ -105,6 +124,8 @@ async function changeToSingleEntry() {
     title: TITLE,
     contexts,
   });
+
+  await createOpenCloseEntry();
 }
 
 async function createContextMenusFromProfiles(profiles) {

@@ -25,7 +25,6 @@
         }
     },
     "background": {
-        "scripts": ["ff2mpv.js"],
         "service_worker": "ff2mpv.js"
     },
     "options_ui": {
@@ -36,6 +35,7 @@
         "nativeMessaging",
         "contextMenus",
         "activeTab",
+        "tabs",
         "storage",
         "scripting"
     ]
