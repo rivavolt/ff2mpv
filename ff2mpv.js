@@ -11,6 +11,40 @@ function onError(error) {
   console.log(`${error}`);
 }
 
+function isYouTubeVideo(url) {
+  try {
+    const u = new URL(url);
+    return (
+      u.hostname === "www.youtube.com" &&
+      u.pathname === "/watch"
+    );
+  } catch {
+    return false;
+  }
+}
+
+async function getYouTubeTimestamp(tabId) {
+  try {
+    const results = await chrome.scripting.executeScript({
+      target: { tabId },
+      func: () => {
+        const video = document.querySelector("video");
+        return video ? Math.floor(video.currentTime) : 0;
+      },
+    });
+    return results[0]?.result || 0;
+  } catch {
+    return 0;
+  }
+}
+
+function withTimestamp(url, seconds) {
+  if (seconds <= 0) return url;
+  const u = new URL(url);
+  u.searchParams.set("t", String(seconds));
+  return u.toString();
+}
+
 function ff2mpv(url, tabId, options) {
   if (tabId != null) {
     chrome.scripting.executeScript({
@@ -48,8 +82,12 @@ async function getOptions(id) {
 
 async function submenuClicked(info, tab) {
   if (info.menuItemId === OPEN_CLOSE_MENU_ID) {
-    const url = info.pageUrl || (tab && tab.url);
+    let url = info.pageUrl || (tab && tab.url);
     if (url) {
+      if (tab && isYouTubeVideo(url)) {
+        const seconds = await getYouTubeTimestamp(tab.id);
+        url = withTimestamp(url, seconds);
+      }
       ff2mpv(url, tab ? tab.id : null);
       if (tab) chrome.tabs.remove(tab.id);
     }
@@ -166,8 +204,13 @@ async function updateProfile(profile) {
   });
 }
 
-chrome.action.onClicked.addListener((tab) => {
-  ff2mpv(tab.url, tab.id);
+chrome.action.onClicked.addListener(async (tab) => {
+  let url = tab.url;
+  if (isYouTubeVideo(url)) {
+    const seconds = await getYouTubeTimestamp(tab.id);
+    url = withTimestamp(url, seconds);
+  }
+  ff2mpv(url, tab.id);
 });
 
 // Messages sent with chrome.runtime.sendMessage (https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/runtime/sendMessage) from external applications will be handle here.
