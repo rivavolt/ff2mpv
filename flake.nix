@@ -45,7 +45,7 @@
               cp -r icons options $out/share/chromium-extension/
 
               wrapProgram $out/bin/ff2mpv.py \
-                --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.mpv ]}
+                --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.mpv pkgs.streamlink pkgs.yt-dlp ]}
             '';
 
             meta = {

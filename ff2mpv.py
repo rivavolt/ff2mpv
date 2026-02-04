@@ -6,6 +6,22 @@ import platform
 import struct
 import sys
 import subprocess
+import shutil
+import urllib.request
+
+
+def is_youtube_live(url):
+    """Quick check if a YouTube URL is a live stream by fetching page HTML (~0.2s)."""
+    try:
+        req = urllib.request.Request(url, headers={
+            "User-Agent": "Mozilla/5.0",
+            "Cookie": "CONSENT=YES+1",
+        })
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            html = resp.read(500_000).decode("utf-8", errors="ignore")
+            return '"isLive":true' in html
+    except Exception:
+        return False
 
 
 def main():
@@ -13,29 +29,31 @@ def main():
     url = message.get("url")
     options = message.get("options") or []
 
-    args = ["mpv", "--no-terminal", *options, "--", url]
+    # Respond immediately so Chromium doesn't kill the native messaging host
+    send_message("ok")
 
     kwargs = {}
     # https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Native_messaging#Closing_the_native_app
     if platform.system() == "Windows":
         kwargs["creationflags"] = subprocess.CREATE_BREAKAWAY_FROM_JOB
 
-    # HACK(ww): On macOS, graphical applications inherit their path from `launchd`
-    # rather than the default path list in `/etc/paths`. `launchd` doesn't include
-    # Homebrew in its default list, which means that any installations
-    # of MPV and/or youtube-dl under that prefix aren't visible when spawning
-    # from, say, Firefox. The real fix is to modify `launchd.conf`, but that's
-    # invasive and maybe not what users want in the general case.
-    # Hence this nasty hack.
     if platform.system() == "Darwin":
         path = os.environ.get("PATH")
         os.environ["PATH"] = f"/opt/homebrew/bin:/usr/local/bin:{path}"
 
-    subprocess.Popen(args, **kwargs)
+    # Use streamlink for YouTube live streams (ffmpeg can't auth HLS segments)
+    if (
+        url
+        and "youtube.com" in url
+        and shutil.which("streamlink")
+        and is_youtube_live(url)
+    ):
+        mpv = shutil.which("mpv")
+        args = ["streamlink", "--player", mpv, "--player-args", "--no-terminal {playerinput}", url, "best"]
+    else:
+        args = ["mpv", "--no-terminal", *options, "--", url]
 
-    # Need to respond something to avoid "Error: An unexpected error occurred"
-    # in Browser Console.
-    send_message("ok")
+    subprocess.Popen(args, **kwargs)
 
 
 # https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Native_messaging#App_side

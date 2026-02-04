@@ -2,6 +2,7 @@
     "description": "Tries to play links in MPV",
     "manifest_version": 3,
     "name": "ff2mpv",
+    "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwpBYkTmlshesRsq6Spd33apADGdaMOEY/Pb+LppNt61IBCHMTGOpuD91fs+TIV2K6fRozZd40Hw6PJJNnPbDRoZCO/vY7GAFkZEuHKLwBo256xSNux8wSNWyeNlCJrOzYOcmBhy5HL82d6hMwc5NrTU9HKSI1jc3c8nNavngPOwIsWM4PixPSnm1XpMtvKS2xljuwPbY1mk2fU8//qZEzVfEIwWvnmKOZkfWcUqtEHE10HSvvZn3seTPeiwsFikljlfXszALXrWGqc0TeVrdhrJvQGElchxtOIQMkl0BjIU1wyrMk9benzkhZdqXJ8iLAZt2mh9oN4gjeNnudrpAnQIDAQAB",
     "version": "6.0.0",
     "icons": {
         "16": "icons/icon_16x16.png",
