@@ -64,8 +64,10 @@
               cp manifest.json ff2mpv.js LICENSE $out/share/chromium-extension/
               cp -r icons options $out/share/chromium-extension/
 
+              # Only add streamlink and yt-dlp; mpv is inherited from system PATH
+              # so the user's mpv-with-scripts (uosc, thumbfast, etc.) is used
               wrapProgram $out/bin/ff2mpv.py \
-                --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.mpv pkgs.streamlink pkgs.yt-dlp ]}
+                --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.streamlink pkgs.yt-dlp ]}
             '';
 
             meta = {
