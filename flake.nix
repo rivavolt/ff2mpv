@@ -12,7 +12,27 @@
       packages = forAllSystems (
         system:
         let
-          pkgs = nixpkgs.legacyPackages.${system};
+          pkgs = import nixpkgs {
+            inherit system;
+            overlays = [
+              # Temporary: update yt-dlp to support --remote-components for YouTube n-challenge
+              (final: prev: {
+                yt-dlp = prev.yt-dlp.overrideAttrs (old: {
+                  version = "2026.02.04";
+                  src = prev.fetchFromGitHub {
+                    owner = "yt-dlp";
+                    repo = "yt-dlp";
+                    rev = "2026.02.04";
+                    hash = "sha256-KXnz/ocHBftenDUkCiFoBRBxi6yWt0fNuRX+vKFWDQw=";
+                  };
+                  postPatch = builtins.replaceStrings
+                    [ "if curl_cffi_version != (0, 5, 10) and not (0, 10) <= curl_cffi_version < (0, 14)" ]
+                    [ "if curl_cffi_version != (0, 5, 10) and not (0, 10) <= curl_cffi_version < (0, 15)" ]
+                    old.postPatch;
+                });
+              })
+            ];
+          };
         in
         {
           default = pkgs.stdenv.mkDerivation {
