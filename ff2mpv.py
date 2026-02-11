@@ -28,6 +28,7 @@ def main():
     message = get_message()
     url = message.get("url")
     options = message.get("options") or []
+    title = message.get("title")
 
     # Respond immediately so Chromium doesn't kill the native messaging host
     send_message("ok")
@@ -41,6 +42,8 @@ def main():
         path = os.environ.get("PATH")
         os.environ["PATH"] = f"/opt/homebrew/bin:/usr/local/bin:{path}"
 
+    title_args = [f"--title={title}"] if title else []
+
     # Use streamlink for YouTube live streams (ffmpeg can't auth HLS segments)
     if (
         url
@@ -49,9 +52,10 @@ def main():
         and is_youtube_live(url)
     ):
         mpv = shutil.which("mpv")
-        args = ["streamlink", "--player", mpv, "--player-args", "--no-terminal {playerinput}", url, "best"]
+        player_args = " ".join(["--no-terminal", *title_args, "{playerinput}"])
+        args = ["streamlink", "--player", mpv, "--player-args", player_args, url, "best"]
     else:
-        args = ["mpv", "--no-terminal", *options, "--", url]
+        args = ["mpv", "--no-terminal", *title_args, *options, "--", url]
 
     subprocess.Popen(args, **kwargs)
 

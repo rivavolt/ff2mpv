@@ -48,7 +48,30 @@ function withTimestamp(url, seconds) {
   return u.toString();
 }
 
-function ff2mpv(url, tabId, options) {
+async function getLinkTitle(tabId, linkUrl) {
+  if (!tabId || !linkUrl) return undefined;
+  try {
+    const results = await chrome.scripting.executeScript({
+      target: { tabId },
+      func: (url) => {
+        for (const a of document.querySelectorAll("a[href]")) {
+          if (a.href !== url) continue;
+          const titled = a.closest("[title]");
+          if (titled?.title) return titled.title;
+          const label = a.getAttribute("aria-label");
+          if (label) return label;
+        }
+        return null;
+      },
+      args: [linkUrl],
+    });
+    return results[0]?.result || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function ff2mpv(url, tabId, options, title) {
   if (tabId != null) {
     chrome.scripting.executeScript({
       target: { tabId: tabId, allFrames: true },
@@ -58,7 +81,7 @@ function ff2mpv(url, tabId, options) {
     });
   }
   options = options ? options : [];
-  chrome.runtime.sendNativeMessage("ff2mpv", { url, options }).catch(onError);
+  chrome.runtime.sendNativeMessage("ff2mpv", { url, options, title }).catch(onError);
 }
 
 async function getProfiles() {
@@ -91,7 +114,7 @@ async function submenuClicked(info, tab) {
         const seconds = await getYouTubeTimestamp(tab.id);
         url = withTimestamp(url, seconds);
       }
-      ff2mpv(url, tab ? tab.id : null);
+      ff2mpv(url, tab ? tab.id : null, null, tab ? tab.title : undefined);
       if (tab) chrome.tabs.remove(tab.id);
     }
     return;
@@ -105,7 +128,10 @@ async function submenuClicked(info, tab) {
     if (url) {
       const tabId = tab ? tab.tabId : null;
       const options = await getOptions(info.menuItemId);
-      ff2mpv(url, tabId, options);
+      const title = info.linkUrl
+        ? await getLinkTitle(tab?.id, info.linkUrl)
+        : undefined;
+      ff2mpv(url, tabId, options, title);
     }
   }
 }
@@ -211,7 +237,7 @@ chrome.action.onClicked.addListener(async (tab) => {
     const seconds = await getYouTubeTimestamp(tab.id);
     url = withTimestamp(url, seconds);
   }
-  ff2mpv(url, tab.id);
+  ff2mpv(url, tab.id, null, tab.title);
 });
 
 // Messages sent with chrome.runtime.sendMessage (https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/runtime/sendMessage) from external applications will be handle here.

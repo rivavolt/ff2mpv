@@ -7,8 +7,10 @@ len = $stdin.read(4).unpack1("L")
 data = JSON.parse($stdin.read(len))
 url = data["url"]
 options = data["options"] || []
+title = data["title"]
 
 args = %w[--no-terminal]
+args.push("--title=#{title}") if title
 args.push(*options)
 
 # HACK(ww): On macOS, graphical applications inherit their path from `launchd`
