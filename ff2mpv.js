@@ -6,6 +6,9 @@ const PROFILES = "profiles";
 const OPEN_VIDEO = "openVideo";
 const TITLE = "Play in MPV";
 const OPEN_CLOSE_MENU_ID = "ff2mpv-open-close";
+const VIDEO_PAGE_PATTERNS = [
+  "*://www.youtube.com/watch*",
+];
 
 function onError(error) {
   console.log(`${error}`);
@@ -129,14 +132,13 @@ async function createOpenCloseEntry() {
     id: OPEN_CLOSE_MENU_ID,
     title: "Play in MPV",
     contexts: ["page"],
+    documentUrlPatterns: VIDEO_PAGE_PATTERNS,
   });
 }
 
 async function changeToMultiEntries() {
-  // Remove single entry
   await chrome.contextMenus.removeAll();
 
-  // Add sub context menu
   await createContextMenuPromise({
     id: "ff2mpv",
     title: "Profiles",
@@ -154,7 +156,6 @@ async function changeToMultiEntries() {
 }
 
 async function changeToSingleEntry() {
-  // Remove sub context menu
   await chrome.contextMenus.removeAll();
 
   await createContextMenuPromise({
