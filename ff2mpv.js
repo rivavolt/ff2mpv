@@ -261,7 +261,7 @@ chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => 
   }
 });
 
-chrome.runtime.onInstalled.addListener(async (_) => {
+async function registerContextMenus() {
   const profiles = await getProfiles();
 
   if (profiles.length === 0) {
@@ -270,7 +270,10 @@ chrome.runtime.onInstalled.addListener(async (_) => {
     await changeToMultiEntries();
     await createContextMenusFromProfiles(profiles)
   }
-});
+}
+
+chrome.runtime.onInstalled.addListener(registerContextMenus);
+chrome.runtime.onStartup.addListener(registerContextMenus);
 
 chrome.contextMenus.onClicked.addListener(submenuClicked);
 
