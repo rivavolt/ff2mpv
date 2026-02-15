@@ -67,7 +67,8 @@
               # Only add streamlink and yt-dlp; mpv is inherited from system PATH
               # so the user's mpv-with-scripts (uosc, thumbfast, etc.) is used
               wrapProgram $out/bin/ff2mpv.py \
-                --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.streamlink pkgs.yt-dlp ]}
+                --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.streamlink pkgs.yt-dlp ]} \
+                --set-default https_proxy "http://127.0.0.1:1091"
             '';
 
             meta = {
