@@ -33,9 +33,8 @@
               })
             ];
           };
-        in
-        {
-          default = pkgs.stdenv.mkDerivation {
+
+          extension = pkgs.stdenv.mkDerivation {
             pname = "ff2mpv";
             version = "0-unstable";
 
@@ -46,17 +45,13 @@
 
             installPhase = ''
               mkdir -p $out/bin \
-                $out/lib/mozilla/native-messaging-hosts \
-                $out/etc/chromium/native-messaging-hosts
+                $out/lib/mozilla/native-messaging-hosts
 
               cp ff2mpv.py $out/bin/ff2mpv.py
               chmod +x $out/bin/ff2mpv.py
               patchShebangs $out/bin/ff2mpv.py
 
               substitute ff2mpv.json $out/lib/mozilla/native-messaging-hosts/ff2mpv.json \
-                --replace-fail "/home/william/scripts/ff2mpv" "$out/bin/ff2mpv.py"
-
-              substitute ff2mpv-chromium.json $out/etc/chromium/native-messaging-hosts/ff2mpv.json \
                 --replace-fail "/home/william/scripts/ff2mpv" "$out/bin/ff2mpv.py"
 
               # Install browser extension source
@@ -77,6 +72,46 @@
               license = pkgs.lib.licenses.mit;
               mainProgram = "ff2mpv.py";
             };
+          };
+
+          manifest = builtins.fromJSON (builtins.readFile "${extension}/share/chromium-extension/manifest.json");
+
+          extId = builtins.readFile (pkgs.runCommand "ff2mpv-ext-id" {
+            nativeBuildInputs = [ pkgs.python3 pkgs.openssl ];
+          } ''
+            python3 ${./nix/crx-id.py} ${./keys/signing.pem} > $out
+          '');
+
+          crx = pkgs.runCommand "ff2mpv-crx" {
+            nativeBuildInputs = [ pkgs.python3 pkgs.openssl ];
+          } ''
+            mkdir -p $out
+            python3 ${./nix/pack-crx3.py} ${extension}/share/chromium-extension ${./keys/signing.pem} $out/extension.crx
+          '';
+        in
+        {
+          default = pkgs.symlinkJoin {
+            name = "ff2mpv";
+            paths = [
+              extension
+              (pkgs.linkFarm "ff2mpv-crx" [
+                { name = "share/chromium/extensions/${extId}.json";
+                  path = pkgs.writeText "${extId}.json" (builtins.toJSON {
+                    external_crx = "${crx}/extension.crx";
+                    external_version = manifest.version;
+                  });
+                }
+                { name = "etc/chromium/native-messaging-hosts/ff2mpv.json";
+                  path = pkgs.writeText "ff2mpv.json" (builtins.toJSON {
+                    name = "ff2mpv";
+                    description = "ff2mpv's external manifest";
+                    path = "${extension}/bin/ff2mpv.py";
+                    type = "stdio";
+                    allowed_origins = [ "chrome-extension://${extId}/" ];
+                  });
+                }
+              ])
+            ];
           };
         }
       );
