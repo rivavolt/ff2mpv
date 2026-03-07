@@ -1,10 +1,11 @@
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nix-crx.url = "github:andreivolt/nix-crx";
   };
 
   outputs =
-    { self, nixpkgs }:
+    { self, nixpkgs, nix-crx }:
     let
       forAllSystems = nixpkgs.lib.genAttrs nixpkgs.lib.systems.flakeExposed;
     in
@@ -74,40 +75,25 @@
             };
           };
 
-          manifest = builtins.fromJSON (builtins.readFile "${extension}/share/chromium-extension/manifest.json");
-
-          extId = builtins.readFile (pkgs.runCommand "ff2mpv-ext-id" {
-            nativeBuildInputs = [ pkgs.python3 pkgs.openssl ];
-          } ''
-            python3 ${./nix/crx-id.py} ${./keys/signing.pem} > $out
-          '');
-
-          crx = pkgs.runCommand "ff2mpv-crx" {
-            nativeBuildInputs = [ pkgs.python3 pkgs.openssl ];
-          } ''
-            mkdir -p $out
-            python3 ${./nix/pack-crx3.py} ${extension}/share/chromium-extension ${./keys/signing.pem} $out/extension.crx
-          '';
+          crxPkg = nix-crx.lib.mkCrxPackage {
+            inherit pkgs extension;
+            key = ./keys/signing.pem;
+          };
         in
         {
           default = pkgs.symlinkJoin {
             name = "ff2mpv";
             paths = [
               extension
-              (pkgs.linkFarm "ff2mpv-crx" [
-                { name = "share/chromium/extensions/${extId}.json";
-                  path = pkgs.writeText "${extId}.json" (builtins.toJSON {
-                    external_crx = "${crx}/extension.crx";
-                    external_version = manifest.version;
-                  });
-                }
+              crxPkg.package
+              (pkgs.linkFarm "ff2mpv-native" [
                 { name = "etc/chromium/native-messaging-hosts/ff2mpv.json";
                   path = pkgs.writeText "ff2mpv.json" (builtins.toJSON {
                     name = "ff2mpv";
                     description = "ff2mpv's external manifest";
                     path = "${extension}/bin/ff2mpv.py";
                     type = "stdio";
-                    allowed_origins = [ "chrome-extension://${extId}/" ];
+                    allowed_origins = [ "chrome-extension://${crxPkg.extId}/" ];
                   });
                 }
               ])
