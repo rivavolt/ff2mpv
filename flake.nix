@@ -76,12 +76,31 @@
           };
 
           manifest = builtins.fromJSON (builtins.readFile ./manifest.json);
+          geckoId = manifest.browser_specific_settings.gecko.id;
+
 
           crxPkg = nix-crx.lib.mkCrxPackage {
             inherit pkgs extension;
             key = ./keys/signing.pem;
             extId = "fjlcpmdimhknioljkjpaaadbapolemki";
             version = manifest.version;
+          };
+
+          extDir = "share/mozilla/extensions/{ec8030f7-c20a-464f-9b0e-13a3a9e97384}";
+
+          firefoxXpi = pkgs.stdenv.mkDerivation {
+            pname = "ff2mpv-firefox-xpi";
+            version = manifest.version;
+            dontUnpack = true;
+            nativeBuildInputs = [ pkgs.zip ];
+            buildPhase = ''
+              cd ${extension}/share/chromium-extension
+              zip -r $TMPDIR/extension.xpi .
+            '';
+            installPhase = ''
+              mkdir -p $out/${extDir}
+              cp $TMPDIR/extension.xpi $out/${extDir}/${geckoId}.xpi
+            '';
           };
         in
         {
@@ -90,6 +109,7 @@
             paths = [
               extension
               crxPkg.package
+              firefoxXpi
               (pkgs.linkFarm "ff2mpv-native" [
                 { name = "etc/chromium/native-messaging-hosts/ff2mpv.json";
                   path = pkgs.writeText "ff2mpv.json" (builtins.toJSON {
