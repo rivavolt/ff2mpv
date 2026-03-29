@@ -26,7 +26,8 @@
         }
     },
     "background": {
-        "service_worker": "ff2mpv.js"
+        "service_worker": "ff2mpv.js",
+        "scripts": ["ff2mpv.js"]
     },
     "options_ui": {
         "page": "options/options.html",
