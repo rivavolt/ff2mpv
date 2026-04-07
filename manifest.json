@@ -1,44 +1,46 @@
 {
-    "description": "Tries to play links in MPV",
-    "manifest_version": 3,
-    "name": "ff2mpv",
-    "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwpBYkTmlshesRsq6Spd33apADGdaMOEY/Pb+LppNt61IBCHMTGOpuD91fs+TIV2K6fRozZd40Hw6PJJNnPbDRoZCO/vY7GAFkZEuHKLwBo256xSNux8wSNWyeNlCJrOzYOcmBhy5HL82d6hMwc5NrTU9HKSI1jc3c8nNavngPOwIsWM4PixPSnm1XpMtvKS2xljuwPbY1mk2fU8//qZEzVfEIwWvnmKOZkfWcUqtEHE10HSvvZn3seTPeiwsFikljlfXszALXrWGqc0TeVrdhrJvQGElchxtOIQMkl0BjIU1wyrMk9benzkhZdqXJ8iLAZt2mh9oN4gjeNnudrpAnQIDAQAB",
-    "version": "6.1.0",
-    "icons": {
-        "16": "icons/icon_16x16.png",
-        "32": "icons/icon_32x32.png",
-        "48": "icons/icon_48x48.png",
-        "64": "icons/icon_64x64.png",
-        "256": "icons/icon_256x256.png"
-    },
-    "action": {
-        "default_icon": "icons/icon_48x48.png",
-        "default_title": "Play the current URL in MPV"
-    },
-    "commands": {
-        "_execute_action": {
-            "description": "Play the current URL in mpv"
-        }
-    },
-    "browser_specific_settings": {
-        "gecko": {
-            "id": "ff2mpv@yossarian.net"
-        }
-    },
-    "background": {
-        "service_worker": "ff2mpv.js",
-        "scripts": ["ff2mpv.js"]
-    },
-    "options_ui": {
-        "page": "options/options.html",
-        "open_in_tab": false
-    },
-    "permissions": [
-        "nativeMessaging",
-        "contextMenus",
-        "activeTab",
-        "tabs",
-        "storage",
-        "scripting"
-    ]
+  "action": {
+    "default_icon": "icons/icon_48x48.png",
+    "default_title": "Play the current URL in MPV"
+  },
+  "background": {
+    "scripts": [
+      "ff2mpv.js"
+    ],
+    "service_worker": "ff2mpv.js"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "ff2mpv@andreivolt"
+    }
+  },
+  "commands": {
+    "_execute_action": {
+      "description": "Play the current URL in mpv"
+    }
+  },
+  "description": "Tries to play links in MPV",
+  "icons": {
+    "16": "icons/icon_16x16.png",
+    "256": "icons/icon_256x256.png",
+    "32": "icons/icon_32x32.png",
+    "48": "icons/icon_48x48.png",
+    "64": "icons/icon_64x64.png"
+  },
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwpBYkTmlshesRsq6Spd33apADGdaMOEY/Pb+LppNt61IBCHMTGOpuD91fs+TIV2K6fRozZd40Hw6PJJNnPbDRoZCO/vY7GAFkZEuHKLwBo256xSNux8wSNWyeNlCJrOzYOcmBhy5HL82d6hMwc5NrTU9HKSI1jc3c8nNavngPOwIsWM4PixPSnm1XpMtvKS2xljuwPbY1mk2fU8//qZEzVfEIwWvnmKOZkfWcUqtEHE10HSvvZn3seTPeiwsFikljlfXszALXrWGqc0TeVrdhrJvQGElchxtOIQMkl0BjIU1wyrMk9benzkhZdqXJ8iLAZt2mh9oN4gjeNnudrpAnQIDAQAB",
+  "manifest_version": 3,
+  "name": "ff2mpv",
+  "options_ui": {
+    "open_in_tab": false,
+    "page": "options/options.html"
+  },
+  "permissions": [
+    "nativeMessaging",
+    "contextMenus",
+    "activeTab",
+    "tabs",
+    "storage",
+    "scripting"
+  ],
+  "version": "6.1.0"
 }
