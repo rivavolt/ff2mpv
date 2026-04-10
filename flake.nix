@@ -15,7 +15,11 @@
         let
           pkgs = import nixpkgs {
             inherit system;
-            overlays = [];
+            overlays = [
+              (final: prev: {
+                yt-dlp = prev.yt-dlp.override { javascriptSupport = false; };
+              })
+            ];
           };
 
           extension = pkgs.stdenv.mkDerivation {
