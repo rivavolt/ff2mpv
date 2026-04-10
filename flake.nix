@@ -17,7 +17,12 @@
             inherit system;
             overlays = [
               (final: prev: {
-                yt-dlp = prev.yt-dlp.override { javascriptSupport = false; };
+                deno = prev.deno.overrideAttrs (old: {
+                  CARGO_BUILD_JOBS = "4";
+                  preBuild = (old.preBuild or "") + ''
+                    export CARGO_PROFILE_RELEASE_LTO=false
+                  '';
+                });
               })
             ];
           };
