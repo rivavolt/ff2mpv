@@ -27,9 +27,13 @@ let
 
       # Only add streamlink and yt-dlp; mpv is inherited from system PATH
       # so the user's mpv-with-scripts (uosc, thumbfast, etc.) is used
+      # Chrome chdir's into the host binary's directory before exec. When that
+      # is /nix/store/.../bin (read-only), yt-dlp's tempfile handling fails and
+      # mpv surfaces "fetching formats failed". Force cwd into $HOME first.
       wrapProgram $out/bin/ff2mpv.py \
         --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.streamlink pkgs.yt-dlp ]} \
-        --set-default https_proxy "http://127.0.0.1:1091"
+        --set-default https_proxy "http://127.0.0.1:1091" \
+        --run 'cd "''${HOME:-/tmp}"'
     '';
 
     meta = {
