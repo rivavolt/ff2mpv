@@ -17,19 +17,7 @@
       packages = forAllSystems (
         system:
         let
-          pkgs = import nixpkgs {
-            inherit system;
-            overlays = [
-              (final: prev: {
-                deno = prev.deno.overrideAttrs (old: {
-                  CARGO_BUILD_JOBS = "4";
-                  preBuild = (old.preBuild or "") + ''
-                    export CARGO_PROFILE_RELEASE_LTO=false
-                  '';
-                });
-              })
-            ];
-          };
+          pkgs = import nixpkgs { inherit system; };
         in
         { default = import ./package.nix { inherit pkgs nix-crx; src = self; }; }
       );
