@@ -25,8 +25,7 @@ let
       cp manifest.json ff2mpv.js LICENSE $out/share/chromium-extension/
       cp -r icons options $out/share/chromium-extension/
 
-      # Bake mpv into the wrapper PATH (alongside streamlink + yt-dlp). Chromium spawns the native-messaging host inheriting most of the user env so it could pick up mpv from $PATH; Firefox hands the host a near-empty PATH so the bare Popen('mpv') silently failed. Tradeoff: mpv-with-user-scripts (uosc, thumbfast) won't be invoked here — override this derivation downstream if you want that.
-      # Chromium also chdir's into the host binary's directory before exec; on a /nix/store readonly dir yt-dlp's tempfile handling fails. Force cwd into $HOME.
+      # cd into $HOME because Chromium chdirs to the host's /nix/store dir on launch and yt-dlp's tempfile handling fails there.
       wrapProgram $out/bin/ff2mpv.py \
         --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.mpv pkgs.streamlink pkgs.yt-dlp ]} \
         --set-default https_proxy "http://127.0.0.1:1091" \
