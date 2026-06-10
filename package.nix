@@ -1,4 +1,4 @@
-{ pkgs, nix-crx, src }:
+{ pkgs, nix-webext, src }:
 let
   extension = pkgs.stdenv.mkDerivation {
     pname = "ff2mpv";
@@ -42,47 +42,32 @@ let
 
   manifest = builtins.fromJSON (builtins.readFile (src + "/manifest.json"));
   geckoId = manifest.browser_specific_settings.gecko.id;
+  extId = "fjlcpmdimhknioljkjpaaadbapolemki";
 
-  crxPkg = nix-crx.lib.mkCrxPackage {
-    inherit pkgs extension;
-    key = src + "/keys/signing.pem";
-    extId = "fjlcpmdimhknioljkjpaaadbapolemki";
+  # Chrome native-messaging host registration (the Firefox one ships in the
+  # extension derivation at lib/mozilla/...). Points at this extension's stable
+  # Chrome id.
+  nativeMessaging = pkgs.linkFarm "ff2mpv-native" [
+    { name = "etc/chromium/native-messaging-hosts/ff2mpv.json";
+      path = pkgs.writeText "ff2mpv.json" (builtins.toJSON {
+        name = "ff2mpv";
+        description = "ff2mpv's external manifest";
+        path = "${extension}/bin/ff2mpv.py";
+        type = "stdio";
+        allowed_origins = [ "chrome-extension://${extId}/" ];
+      });
+    }
+  ];
+
+  # Keyless build: Chrome CRX signed at activation from the sops key; extId is
+  # the stable Chrome ID the old committed key derived. The manifest carries both
+  # background forms, so the MV3 transform projects each browser's. extension is
+  # folded in so its native-messaging host + bin land in `default`.
+  ext = nix-webext.lib.mkBrowserExtension {
+    inherit pkgs extension extId geckoId;
+    pname = "ff2mpv";
     version = manifest.version;
-  };
-
-  extDir = "share/mozilla/extensions/{ec8030f7-c20a-464f-9b0e-13a3a9e97384}";
-
-  firefoxXpi = pkgs.stdenv.mkDerivation {
-    pname = "ff2mpv-firefox-xpi";
-    version = manifest.version;
-    dontUnpack = true;
-    nativeBuildInputs = [ pkgs.zip ];
-    buildPhase = ''
-      cd ${extension}/share/chromium-extension
-      zip -r $TMPDIR/extension.xpi .
-    '';
-    installPhase = ''
-      mkdir -p $out/${extDir}
-      cp $TMPDIR/extension.xpi $out/${extDir}/${geckoId}.xpi
-    '';
+    extraPaths = [ extension nativeMessaging ];
   };
 in
-pkgs.symlinkJoin {
-  name = "ff2mpv";
-  paths = [
-    extension
-    crxPkg.package
-    firefoxXpi
-    (pkgs.linkFarm "ff2mpv-native" [
-      { name = "etc/chromium/native-messaging-hosts/ff2mpv.json";
-        path = pkgs.writeText "ff2mpv.json" (builtins.toJSON {
-          name = "ff2mpv";
-          description = "ff2mpv's external manifest";
-          path = "${extension}/bin/ff2mpv.py";
-          type = "stdio";
-          allowed_origins = [ "chrome-extension://${crxPkg.extId}/" ];
-        });
-      }
-    ])
-  ];
-}
+ext.default
