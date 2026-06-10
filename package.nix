@@ -70,4 +70,7 @@ let
     extraPaths = [ extension nativeMessaging ];
   };
 in
-ext.default
+# Return the whole nix-webext result: `default` (the symlinkJoin with the CRX
+# manifest + Firefox XPI + native-messaging hosts) plus the extId/chromeContent
+# passthrus nixos-config's activation signer needs.
+ext

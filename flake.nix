@@ -12,14 +12,16 @@
     {
       overlays.default = final: prev:
         let mkFF2mpv = pkgs: import ./package.nix { inherit pkgs nix-webext; src = self; };
-        in { ff2mpv = mkFF2mpv final; };
+        # The overlay attr is the installable derivation (`.default`); the full
+        # nix-webext result (with extId/chromeContent passthrus) is on `packages`.
+        in { ff2mpv = (mkFF2mpv final).default; };
 
       packages = forAllSystems (
         system:
         let
           pkgs = import nixpkgs { inherit system; };
         in
-        { default = import ./package.nix { inherit pkgs nix-webext; src = self; }; }
+        import ./package.nix { inherit pkgs nix-webext; src = self; }
       );
     };
 }
