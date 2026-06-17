@@ -3,3 +3,5 @@ dist.crx
 dist.pem
 dist.zip
 ff2mpv-windows-*.json
+result
+result-*
