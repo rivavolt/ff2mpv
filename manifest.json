@@ -11,10 +11,12 @@
   },
   "browser_specific_settings": {
     "gecko": {
-      "id": "ff2mpv@andreivolt",
       "data_collection_permissions": {
-        "required": ["none"]
-      }
+        "required": [
+          "none"
+        ]
+      },
+      "id": "ff2mpv@andreivolt"
     }
   },
   "commands": {
@@ -24,11 +26,10 @@
   },
   "description": "Tries to play links in MPV",
   "icons": {
-    "16": "icons/icon_16x16.png",
-    "256": "icons/icon_256x256.png",
-    "32": "icons/icon_32x32.png",
-    "48": "icons/icon_48x48.png",
-    "64": "icons/icon_64x64.png"
+    "128": "icons/128.png",
+    "16": "icons/16.png",
+    "32": "icons/32.png",
+    "48": "icons/48.png"
   },
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwpBYkTmlshesRsq6Spd33apADGdaMOEY/Pb+LppNt61IBCHMTGOpuD91fs+TIV2K6fRozZd40Hw6PJJNnPbDRoZCO/vY7GAFkZEuHKLwBo256xSNux8wSNWyeNlCJrOzYOcmBhy5HL82d6hMwc5NrTU9HKSI1jc3c8nNavngPOwIsWM4PixPSnm1XpMtvKS2xljuwPbY1mk2fU8//qZEzVfEIwWvnmKOZkfWcUqtEHE10HSvvZn3seTPeiwsFikljlfXszALXrWGqc0TeVrdhrJvQGElchxtOIQMkl0BjIU1wyrMk9benzkhZdqXJ8iLAZt2mh9oN4gjeNnudrpAnQIDAQAB",
   "manifest_version": 3,
@@ -45,5 +46,5 @@
     "storage",
     "scripting"
   ],
-  "version": "6.1.0"
+  "version": "6.1.1"
 }

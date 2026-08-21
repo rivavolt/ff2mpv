@@ -1,5 +1,9 @@
 { pkgs, nix-webext, src }:
 let
+  icons = nix-webext.lib.mkExtensionIcons {
+    inherit pkgs;
+    letter = "f";
+  };
   extension = pkgs.stdenv.mkDerivation {
     pname = "ff2mpv";
     version = "0-unstable";
@@ -24,6 +28,7 @@ let
       mkdir -p $out/share/chromium-extension
       cp manifest.json ff2mpv.js LICENSE $out/share/chromium-extension/
       cp -r icons options $out/share/chromium-extension/
+      cp ${icons}/*.png $out/share/chromium-extension/icons/
 
       # cd into $HOME because Chromium chdirs to the host's /nix/store dir on launch and yt-dlp's tempfile handling fails there.
       wrapProgram $out/bin/ff2mpv.py \
